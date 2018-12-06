@@ -12,7 +12,6 @@ public class Display extends JFrame
 {
     /** The area where the action takes place */
     private Screen screen;
-        
 
     /**
      * Lays out the game and creates the controller

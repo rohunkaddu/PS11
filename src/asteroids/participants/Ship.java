@@ -6,7 +6,6 @@ import java.awt.geom.*;
 import asteroids.destroyers.*;
 import asteroids.game.Controller;
 import asteroids.game.Participant;
-import asteroids.game.ParticipantCountdownTimer;
 
 /**
  * Represents ships
@@ -49,7 +48,9 @@ public class Ship extends Participant implements AsteroidDestroyer
     private int bulletsFired;
     
     /** The bullets that the ship has fired **/
-    private Bullet[] bullets = new Bullet[8];;
+    private Bullet[] bullets = new Bullet[8];
+    
+    private boolean isFlaming;
 
     /**
      * Constructs a ship at the specified coordinates that is pointed in the given direction.
@@ -122,10 +123,25 @@ public class Ship extends Participant implements AsteroidDestroyer
     public void accelerate ()
     {
         accelerate(SHIP_ACCELERATION);
+    }
+    
+    /**
+     * Toggles the flame between on and off
+     */
+    public void toggleFlame() {
+        isFlaming = ! isFlaming;
         
-        outline = makeShipOutline(1);
+        outline = makeShipOutline(isFlaming ? 1 : 0);
+    }
+    
+    /**
+     * Sets whether or not the flame is on
+     * @param isOn  whether or not to make the flame on
+     */
+    public void setFlame(boolean isOn) {
+        isFlaming = isOn;
         
-        new ParticipantCountdownTimer(this, "noacceleration", 250);
+        outline = makeShipOutline(isFlaming ? 1 : 0);
     }
 
     /**
@@ -149,10 +165,7 @@ public class Ship extends Participant implements AsteroidDestroyer
      */
     @Override
     public void countdownComplete (Object payload)
-    {   
-        if (payload.equals("noacceleration")) {
-            outline = makeShipOutline(0);
-        }
+    {  
     }
 
     /**

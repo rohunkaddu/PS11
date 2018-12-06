@@ -27,7 +27,7 @@ public class Screen extends JPanel
         setMinimumSize(new Dimension(SIZE, SIZE));
         setBackground(Color.black);
         setForeground(Color.white);
-        setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 120));
+        setFont(LEGEND_FONT);
         setFocusable(true);
     }
 
@@ -61,7 +61,8 @@ public class Screen extends JPanel
         }
 
         // Draw the legend across the middle of the panel
-        int size = g.getFontMetrics().stringWidth(legend);
-        g.drawString(legend, (SIZE - size) / 2, SIZE / 2);
+        int legendWidth = g.getFontMetrics().stringWidth(legend);
+
+        g.drawString(legend, (SIZE - legendWidth) / 2, (SIZE) / 2);
     }
 }

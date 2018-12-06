@@ -14,34 +14,41 @@ import asteroids.game.Participant;
  */
 public class LifeCounter extends Participant
 {
-    /** Spacing between the indicators */
-    private final static int INDICATOR_SPACING = 15;
-    
-    /** The indicators */
-    private final static Shape[] LIFE_INDICATORS = {
-      makeIndicator(SHIP_WIDTH / 2 + INDICATOR_SPACING),
-      makeIndicator(SHIP_WIDTH / 2 + INDICATOR_SPACING * 2 + SHIP_WIDTH),
-      makeIndicator(SHIP_WIDTH / 2 + INDICATOR_SPACING * 3 + SHIP_WIDTH * 2)      
-    };
     
     /**
      * Creates a new indicator
      * @param x the x cordinate of the indicator
      * @return
      */
-    private static Shape makeIndicator(int x) {
-        AffineTransform trans = AffineTransform.getTranslateInstance(x, SHIP_HEIGHT);
+    private static Shape makeIndicator(int x, int y) {
+        AffineTransform trans = AffineTransform.getTranslateInstance(x, y + SHIP_HEIGHT);
         trans.concatenate(AffineTransform.getRotateInstance(-Math.PI / 2));
         return trans.createTransformedShape(Ship.makeShipOutline(0));
     }
     
     /** The numver of lives to display */
     private int lives = 3;
+    
+    /** The life indicators */
+    private final Shape[] indicators;
+    
+    /**
+     * Creates a new life counter at the given cordinates
+     * @param x
+     * @param y
+     */
+    public LifeCounter(int x, int y) {
+        indicators = new Shape[3];
+        
+        indicators[0] = makeIndicator(x + SHIP_WIDTH / 2 + SHIP_SEPARATION, y);
+        indicators[1] = makeIndicator(x + SHIP_WIDTH / 2 + SHIP_SEPARATION * 2 + SHIP_WIDTH, y);
+        indicators[2] = makeIndicator(x + SHIP_WIDTH / 2 + SHIP_SEPARATION * 3 + SHIP_WIDTH * 2, y);
+    }
 
     @Override
     protected Shape getOutline ()
     {
-        return LIFE_INDICATORS[0];
+        return indicators[0];
     }
 
     @Override
@@ -64,7 +71,7 @@ public class LifeCounter extends Participant
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY); 
         
         for (int i = 0; i < lives; i++) {
-            g.draw(LIFE_INDICATORS[i]);
+            g.draw(indicators[i]);
         }
     }
 }

@@ -6,6 +6,7 @@ import java.util.Iterator;
 import javax.swing.*;
 import asteroids.participants.Asteroid;
 import asteroids.participants.LifeCounter;
+import asteroids.participants.Counter;
 import asteroids.participants.Ship;
 
 /**
@@ -13,8 +14,10 @@ import asteroids.participants.Ship;
  */
 public class Controller implements KeyListener, ActionListener
 {
-    private final LifeCounter lifeCounter = new LifeCounter();
-    
+    private LifeCounter lifeCounter;
+    private Counter scoreCounter;
+    private Counter levelCounter;
+
     /** The state of all the Participants */
     private ParticipantState pstate;
 
@@ -91,7 +94,7 @@ public class Controller implements KeyListener, ActionListener
         display.setLegend("Asteroids");
 
         // Place four asteroids near the corners of the screen.
-        placeAsteroids();
+        placeAsteroids(4);
     }
 
     /**
@@ -118,13 +121,15 @@ public class Controller implements KeyListener, ActionListener
     /**
      * Places an asteroid near one corner of the screen. Gives it a random velocity and rotation.
      */
-    private void placeAsteroids ()
+    private void placeAsteroids (int n)
     {
-        addParticipant(new Asteroid(0, 2, EDGE_OFFSET, EDGE_OFFSET, 3, this));
-        addParticipant(new Asteroid(1, 2, SIZE - EDGE_OFFSET, EDGE_OFFSET, 3, this));
-        addParticipant(new Asteroid(2, 2, EDGE_OFFSET, SIZE - EDGE_OFFSET, 3, this));
-        addParticipant(new Asteroid(3, 2, SIZE - EDGE_OFFSET, SIZE - EDGE_OFFSET, 3, this));
+        for (int i = 0; i < n; i++)
+        {
+            int x = i % 2 == 0 ? EDGE_OFFSET : SIZE - EDGE_OFFSET;
+            int y = (i / 2) % 2 == 0 ? EDGE_OFFSET : SIZE - EDGE_OFFSET;
 
+            addParticipant(new Asteroid(i % 3, 2, x, y, 3, this));
+        }
     }
 
     /**
@@ -146,13 +151,23 @@ public class Controller implements KeyListener, ActionListener
         clear();
 
         // Plac asteroids
-        placeAsteroids();
+        placeAsteroids(4);
 
         // Place the ship
         placeShip();
-        
+
         // place counter
+        lives = 3;
+        level = 1;
+        score = 0;
+
+        lifeCounter = new LifeCounter(0, 20);
+        scoreCounter = new Counter(LABEL_HORIZONTAL_OFFSET, LABEL_VERTICAL_OFFSET);
+        levelCounter = new Counter(SIZE - LABEL_HORIZONTAL_OFFSET, LABEL_VERTICAL_OFFSET);
+
         addParticipant(lifeCounter);
+        addParticipant(scoreCounter);
+        addParticipant(levelCounter);
 
         // Reset statistics
         lives = 3;
@@ -214,8 +229,20 @@ public class Controller implements KeyListener, ActionListener
         if (pstate.countAsteroids() == 0)
         {
             scheduleTransition(END_DELAY);
+            nextLevel();
         }
 
+    }
+
+    /**
+     * Progresses to the next level
+     */
+    private void nextLevel ()
+    {
+        level++;
+        levelCounter.setCount(level);
+
+        placeAsteroids(level + 3);
     }
 
     /**
@@ -260,6 +287,9 @@ public class Controller implements KeyListener, ActionListener
                 if (upPressed)
                 {
                     ship.accelerate();
+                    ship.toggleFlame();
+                } else {
+                    ship.setFlame(false);
                 }
             }
 
@@ -298,12 +328,24 @@ public class Controller implements KeyListener, ActionListener
     }
 
     /**
+     * Increases the score by the given amount
+     * 
+     * @param amount the amount by which to increase the score
+     */
+    public void increaseScore (int amount)
+    {
+        score += amount;
+        scoreCounter.setCount(score);
+    }
+
+    /**
      * If a key of interest is pressed, record that it is down.
      */
     @Override
     public void keyPressed (KeyEvent e)
     {
-        switch (e.getKeyCode()) {
+        switch (e.getKeyCode())
+        {
             case KeyEvent.VK_RIGHT:
             case KeyEvent.VK_D:
                 rightPressed = true;
@@ -330,7 +372,7 @@ public class Controller implements KeyListener, ActionListener
     @Override
     public void keyTyped (KeyEvent e)
     {
-        
+
     }
 
     /**
@@ -339,7 +381,8 @@ public class Controller implements KeyListener, ActionListener
     @Override
     public void keyReleased (KeyEvent e)
     {
-        switch (e.getKeyCode()) {
+        switch (e.getKeyCode())
+        {
             case KeyEvent.VK_RIGHT:
             case KeyEvent.VK_D:
                 rightPressed = false;
