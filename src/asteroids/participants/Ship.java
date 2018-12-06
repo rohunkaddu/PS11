@@ -13,11 +13,43 @@ import asteroids.game.ParticipantCountdownTimer;
  */
 public class Ship extends Participant implements AsteroidDestroyer
 {
+    /**
+     * Makes a outline for a ship with the given thruster size
+     * @param thrusterSize  a size to make the thruster
+     * @return              the outline of the thruster
+     */
+    public static Shape makeShipOutline(double thrusterSize) {
+        Path2D.Double poly = new Path2D.Double();
+        
+        poly.moveTo(SHIP_HEIGHT/2, 0);
+        poly.lineTo(-SHIP_HEIGHT/2, SHIP_WIDTH/2);
+        poly.lineTo(-SHIP_HEIGHT/2 + 7, SHIP_WIDTH/2 - 2);
+        
+        // draw thrust
+        poly.lineTo(-SHIP_HEIGHT/2 + 7 - 15 * thrusterSize, -SHIP_WIDTH/4 + 6);
+        poly.lineTo(-SHIP_HEIGHT/2 + 7, -SHIP_WIDTH/2 + 2);
+        poly.lineTo(-SHIP_HEIGHT/2 + 7, SHIP_WIDTH/2 - 2);
+        
+        // finish ship
+        poly.lineTo(-SHIP_HEIGHT/2 + 7, -SHIP_WIDTH/2 + 2);
+        poly.lineTo(-SHIP_HEIGHT/2, -SHIP_WIDTH/2);
+        
+        poly.closePath();
+        
+        return poly;
+    }
+    
     /** The outline of the ship */
     private Shape outline;
 
     /** Game controller */
     private Controller controller;
+    
+    /** The number of bullets fired **/
+    private int bulletsFired;
+    
+    /** The bullets that the ship has fired **/
+    private Bullet[] bullets = new Bullet[8];;
 
     /**
      * Constructs a ship at the specified coordinates that is pointed in the given direction.
@@ -28,17 +60,7 @@ public class Ship extends Participant implements AsteroidDestroyer
         setPosition(x, y);
         setRotation(direction);
 
-        Path2D.Double poly = new Path2D.Double();
-        poly.moveTo(21, 0);
-        poly.lineTo(-21, 12);
-        poly.lineTo(-14, 10);
-        poly.lineTo(-14, -10);
-        poly.lineTo(-21, -12);
-        poly.closePath();
-        outline = poly;
-
-        // Schedule an acceleration in two seconds
-        //new ParticipantCountdownTimer(this, "move", 2000);
+        outline = makeShipOutline(0);
     }
 
     /**
@@ -74,6 +96,7 @@ public class Ship extends Participant implements AsteroidDestroyer
     public void move ()
     {
         applyFriction(SHIP_FRICTION);
+                
         super.move();
     }
 
@@ -99,6 +122,10 @@ public class Ship extends Participant implements AsteroidDestroyer
     public void accelerate ()
     {
         accelerate(SHIP_ACCELERATION);
+        
+        outline = makeShipOutline(1);
+        
+        new ParticipantCountdownTimer(this, "noacceleration", 250);
     }
 
     /**
@@ -122,13 +149,27 @@ public class Ship extends Participant implements AsteroidDestroyer
      */
     @Override
     public void countdownComplete (Object payload)
-    {
-        // Give a burst of acceleration, then schedule another
-        // burst for 200 msecs from now.
-        if (payload.equals("move"))
-        {
-            accelerate();
-            new ParticipantCountdownTimer(this, "move", 200);
+    {   
+        if (payload.equals("noacceleration")) {
+            outline = makeShipOutline(0);
         }
+    }
+
+    /**
+     * Fires a bullet from the ship
+     */
+    public void fire() {
+        if (bullets[bulletsFired] != null && ! bullets[bulletsFired].isExpired())
+            return;
+            
+        
+        Bullet bullet = new Bullet.ShipBullet();
+        bullet.setPosition(getXNose(), getYNose());
+        bullet.setVelocity(BULLET_SPEED, getRotation());
+        controller.addParticipant(bullet);
+        
+        bullets[bulletsFired] = bullet;
+        
+        bulletsFired = (bulletsFired + 1) % 7;
     }
 }

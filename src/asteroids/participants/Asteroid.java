@@ -8,7 +8,6 @@ import asteroids.destroyers.AsteroidDestroyer;
 import asteroids.destroyers.ShipDestroyer;
 import asteroids.game.Controller;
 import asteroids.game.Participant;
-import asteroids.game.ParticipantCountdownTimer;
 
 /**
  * Represents asteroids
@@ -24,15 +23,9 @@ public class Asteroid extends Participant implements ShipDestroyer
     /** The game controller */
     private Controller controller;
 
-    private int variety;
-
-    private Debris debris;
-
     private int score;
 
     private int speed;
-
-    // private int
 
     /**
      * Throws an IllegalArgumentException if size or variety is out of range.
@@ -56,7 +49,6 @@ public class Asteroid extends Participant implements ShipDestroyer
         // Create the asteroid
         this.controller = controller;
         this.size = size;
-        this.variety = variety;
         this.speed = speed;
         setPosition(x, y);
         setVelocity(speed, RANDOM.nextDouble() * 2 * Math.PI);
@@ -150,11 +142,6 @@ public class Asteroid extends Participant implements ShipDestroyer
         return size;
     }
 
-    public int getVariety ()
-    {
-        return variety;
-    }
-
     public int getAsteroidSpeed ()
     {
         if (size == 1)
@@ -192,9 +179,8 @@ public class Asteroid extends Participant implements ShipDestroyer
 
             for (int i = 0; i < 5; i++)
             {
-                debris = new Debris();
+                Debris debris = new Debris(2);
                 debris.setPosition(getX(), getY());
-                debris.setVelocity(Math.random() * 2, Math.random() * 2);
                 controller.addParticipant(debris);
             }
 

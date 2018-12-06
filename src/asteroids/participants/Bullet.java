@@ -4,15 +4,37 @@ import static asteroids.game.Constants.*;
 import java.awt.Shape;
 import java.awt.geom.Path2D;
 import asteroids.destroyers.AsteroidDestroyer;
-import asteroids.destroyers.ShipDestroyer;
 import asteroids.game.Participant;
 import asteroids.game.ParticipantCountdownTimer;
 
-public class Bullet extends Participant implements AsteroidDestroyer
+/**
+ * A bullet participant
+ * @author carson storm
+ *
+ */
+public abstract class Bullet extends Participant implements AsteroidDestroyer
 {
-
+    /**
+     * A bullet from a alien ship
+     * @author carson storm
+     *
+     */
+    public static class AlienBullet extends Bullet {}
+    
+    
+    /**
+     * A bullet from the ship
+     * @author carson storm
+     *
+     */
+    public static class ShipBullet extends Bullet {}
+    
+    /** The outline of the bullet **/
     private Shape outline;
     
+    /**
+     * Creates a new bullet
+     */
     public Bullet ()
     {
         Path2D.Double poly = new Path2D.Double();
@@ -35,12 +57,6 @@ public class Bullet extends Participant implements AsteroidDestroyer
     public void collidedWith (Participant p)
     {
         Participant.expire(this); 
-    }
-    
-    @Override
-    public void move ()
-    {
-        super.move();
     }
     
     @Override

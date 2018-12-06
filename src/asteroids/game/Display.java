@@ -12,13 +12,7 @@ public class Display extends JFrame
 {
     /** The area where the action takes place */
     private Screen screen;
-    
-    private int score;
-    
-    private int lives;
-    
-    private JLabel scoreandlives;
-    
+        
 
     /**
      * Lays out the game and creates the controller
@@ -46,8 +40,6 @@ public class Display extends JFrame
         // The button that starts the game
         JButton startGame = new JButton(START_LABEL);
         controls.add(startGame);
-        scoreandlives = new JLabel("");
-        controls.add(scoreandlives);
 
         // Organize everything
         JPanel mainPanel = new JPanel();
@@ -76,16 +68,6 @@ public class Display extends JFrame
     public void setLegend (String s)
     {
         screen.setLegend(s);
-    }
-    
-    public void setScore (int score)
-    {
-        this.score = score;
-    }
-    
-    public void setLives (int lives)
-    {
-        this.lives = lives;
     }
 
 }

@@ -5,8 +5,7 @@ import java.awt.event.*;
 import java.util.Iterator;
 import javax.swing.*;
 import asteroids.participants.Asteroid;
-import asteroids.participants.Bullet;
-import asteroids.participants.Debris;
+import asteroids.participants.LifeCounter;
 import asteroids.participants.Ship;
 
 /**
@@ -14,21 +13,25 @@ import asteroids.participants.Ship;
  */
 public class Controller implements KeyListener, ActionListener
 {
+    private final LifeCounter lifeCounter = new LifeCounter();
+    
     /** The state of all the Participants */
     private ParticipantState pstate;
 
     /** The ship (if one is active) or null (otherwise) */
     private Ship ship;
 
-    private Asteroid asteroid;
-
     /** When this timer goes off, it is time to refresh the animation */
     private Timer refreshTimer;
 
-    private Debris debris;
-
+    /**
+     * The current level of the game
+     */
     private int level;
 
+    /**
+     * The current score of the game
+     */
     private int score;
 
     private boolean rightPressed;
@@ -46,10 +49,6 @@ public class Controller implements KeyListener, ActionListener
 
     /** The game display */
     private Display display;
-
-    private Bullet[] bullets = new Bullet[8];
-
-    private int bulletsFired;
 
     /**
      * Constructs a controller to coordinate the game and screen
@@ -151,6 +150,9 @@ public class Controller implements KeyListener, ActionListener
 
         // Place the ship
         placeShip();
+        
+        // place counter
+        addParticipant(lifeCounter);
 
         // Reset statistics
         lives = 3;
@@ -186,13 +188,13 @@ public class Controller implements KeyListener, ActionListener
 
         // Decrement lives
         lives--;
+        lifeCounter.setLives(lives);
 
         // Since the ship was destroyed, schedule a transition
         scheduleTransition(END_DELAY);
 
         if (lives > 0)
         {
-            // new ParticipantCountdownTimer(this, (Object)ship, 3000);
             placeShip();
         }
         else
@@ -301,33 +303,24 @@ public class Controller implements KeyListener, ActionListener
     @Override
     public void keyPressed (KeyEvent e)
     {
-        if (e.getKeyCode() == KeyEvent.VK_RIGHT && ship != null)
-        {
-            rightPressed = true;
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_LEFT && ship != null)
-        {
-            leftPressed = true;
-        }
-        if (e.getKeyCode() == KeyEvent.VK_UP && ship != null)
-        {
-            upPressed = true;
-        }
-        if (e.getKeyCode() == KeyEvent.VK_SPACE && ship != null)
-        {
-            if (bullets[bulletsFired] != null && ! bullets[bulletsFired].isExpired())
-                return;
-                
-            
-            Bullet bullet = new Bullet();
-            bullet.setPosition(ship.getXNose(), ship.getYNose());
-            bullet.setVelocity(BULLET_SPEED, ship.getRotation());
-            addParticipant(bullet);
-            
-            bullets[bulletsFired] = bullet;
-            
-            bulletsFired = (bulletsFired + 1) % 7;
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_RIGHT:
+            case KeyEvent.VK_D:
+                rightPressed = true;
+                break;
+            case KeyEvent.VK_LEFT:
+            case KeyEvent.VK_A:
+                leftPressed = true;
+                break;
+            case KeyEvent.VK_UP:
+            case KeyEvent.VK_W:
+                upPressed = true;
+                break;
+            case KeyEvent.VK_SPACE:
+            case KeyEvent.VK_S:
+                if (ship != null)
+                    ship.fire();
+                break;
         }
     }
 
@@ -341,23 +334,24 @@ public class Controller implements KeyListener, ActionListener
     }
 
     /**
-     * These events are ignored.
+     * When controls are released stop moving
      */
     @Override
     public void keyReleased (KeyEvent e)
     {
-        if (e.getKeyCode() == KeyEvent.VK_RIGHT && ship != null)
-        {
-            rightPressed = false;
-        }
-
-        if (e.getKeyCode() == KeyEvent.VK_LEFT && ship != null)
-        {
-            leftPressed = false;
-        }
-        if (e.getKeyCode() == KeyEvent.VK_UP && ship != null)
-        {
-            upPressed = false;
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_RIGHT:
+            case KeyEvent.VK_D:
+                rightPressed = false;
+                break;
+            case KeyEvent.VK_LEFT:
+            case KeyEvent.VK_A:
+                leftPressed = false;
+                break;
+            case KeyEvent.VK_UP:
+            case KeyEvent.VK_W:
+                upPressed = false;
+                break;
         }
     }
 }
