@@ -7,6 +7,7 @@ import asteroids.destroyers.AsteroidDestroyer;
 import asteroids.destroyers.ShipDestroyer;
 import asteroids.game.Controller;
 import asteroids.game.Participant;
+import sounds.AsteroidSounds;
 
 /**
  * Represents asteroids
@@ -156,12 +157,18 @@ public class Asteroid extends Participant implements ShipDestroyer
     {
         if (p instanceof AsteroidDestroyer)
         {
-            if (size == 2)
+            if (size == 2) {
                 controller.increaseScore(20);
-            else if (size == 1)
+                AsteroidSounds.playSound(AsteroidSounds.BANG_LARGE);
+            }
+            else if (size == 1) {
                 controller.increaseScore(50);
-            else if (size == 0)
+                AsteroidSounds.playSound(AsteroidSounds.BANG_MEDIUM);
+            }
+            else if (size == 0) {
                 controller.increaseScore(100);
+                AsteroidSounds.playSound(AsteroidSounds.BANG_SMALL);
+            }
 
             // Expire the asteroid
             Participant.expire(this);

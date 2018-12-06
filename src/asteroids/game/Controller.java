@@ -8,6 +8,7 @@ import asteroids.participants.Asteroid;
 import asteroids.participants.LifeCounter;
 import asteroids.participants.Counter;
 import asteroids.participants.Ship;
+import sounds.AsteroidSounds;
 
 /**
  * Controls a game of Asteroids.
@@ -26,6 +27,12 @@ public class Controller implements KeyListener, ActionListener
 
     /** When this timer goes off, it is time to refresh the animation */
     private Timer refreshTimer;
+    
+    /** The timer of the beats */
+    private Timer beatTimer;
+    
+    /** Whether or not to play beat 1 next */
+    private boolean onBeat1 = true;
 
     /**
      * The current level of the game
@@ -63,6 +70,9 @@ public class Controller implements KeyListener, ActionListener
 
         // Set up the refresh timer.
         refreshTimer = new Timer(FRAME_INTERVAL, this);
+        
+        // Set up the beat timer
+        beatTimer = new Timer(INITIAL_BEAT, this);
 
         // Clear the transitionTime
         transitionTime = Long.MAX_VALUE;
@@ -74,6 +84,7 @@ public class Controller implements KeyListener, ActionListener
         splashScreen();
         display.setVisible(true);
         refreshTimer.start();
+        beatTimer.start();
     }
 
     /**
@@ -264,6 +275,16 @@ public class Controller implements KeyListener, ActionListener
         if (e.getSource() instanceof JButton)
         {
             initialScreen();
+        }
+        
+        // Play beat and switch
+        else if (e.getSource() == beatTimer)
+        {
+            if (onBeat1) AsteroidSounds.playSound(AsteroidSounds.BEAT_1);
+            else AsteroidSounds.playSound(AsteroidSounds.BEAT_2);
+            
+            beatTimer.setDelay(beatTimer.getDelay() + BEAT_DELTA);
+            onBeat1 = ! onBeat1;
         }
 
         // Time to refresh the screen and deal with keyboard input

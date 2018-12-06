@@ -6,6 +6,7 @@ import java.awt.geom.*;
 import asteroids.destroyers.*;
 import asteroids.game.Controller;
 import asteroids.game.Participant;
+import sounds.AsteroidSounds;
 
 /**
  * Represents ships
@@ -131,6 +132,8 @@ public class Ship extends Participant implements AsteroidDestroyer
     public void toggleFlame() {
         isFlaming = ! isFlaming;
         
+        AsteroidSounds.playSound(AsteroidSounds.THRUST);
+        
         outline = makeShipOutline(isFlaming ? 1 : 0);
     }
     
@@ -157,6 +160,8 @@ public class Ship extends Participant implements AsteroidDestroyer
 
             // Tell the controller the ship was destroyed
             controller.shipDestroyed();
+            
+            AsteroidSounds.playSound(AsteroidSounds.BANG_SHIP);
         }
     }
 
@@ -175,6 +180,7 @@ public class Ship extends Participant implements AsteroidDestroyer
         if (bullets[bulletsFired] != null && ! bullets[bulletsFired].isExpired())
             return;
             
+        AsteroidSounds.playSound(AsteroidSounds.FIRE);
         
         Bullet bullet = new Bullet.ShipBullet();
         bullet.setPosition(getXNose(), getYNose());
