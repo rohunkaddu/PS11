@@ -12,7 +12,7 @@ import asteroids.game.ParticipantCountdownTimer;
  */
 public class Debris extends Participant
 {
-    /** The otline of the debris */
+    /** The outline of the debris */
     private Shape outline;
 
     /**

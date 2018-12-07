@@ -11,7 +11,7 @@ import asteroids.game.ParticipantCountdownTimer;
 /**
  * Represents ships
  */
-public class Ship extends Participant implements AsteroidDestroyer
+public class Ship extends Participant implements AsteroidDestroyer, ShipDestroyer
 {
     /**
      * Makes a outline for a ship with the given thruster size

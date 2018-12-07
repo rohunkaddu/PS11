@@ -110,7 +110,7 @@ public class Constants
      */
     public final static double[] ALIENSHIP_SCALE = { 0.5, 1.0 };
     
-    /**
+    /**uuju           
      * Score earned for alien ships of size 0 and 1.
      */
     public final static int[] ALIENSHIP_SCORE = { 1000, 200 };

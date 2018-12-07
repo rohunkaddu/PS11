@@ -4,6 +4,7 @@ import static asteroids.game.Constants.*;
 import java.awt.Shape;
 import java.awt.geom.Path2D;
 import asteroids.destroyers.AsteroidDestroyer;
+import asteroids.destroyers.ShipDestroyer;
 import asteroids.game.Participant;
 import asteroids.game.ParticipantCountdownTimer;
 
@@ -19,7 +20,7 @@ public abstract class Bullet extends Participant implements AsteroidDestroyer
      * @author carson storm
      *
      */
-    public static class AlienBullet extends Bullet {}
+    public static class AlienBullet extends Bullet implements AsteroidDestroyer {}
     
     
     /**
@@ -27,7 +28,7 @@ public abstract class Bullet extends Participant implements AsteroidDestroyer
      * @author carson storm
      *
      */
-    public static class ShipBullet extends Bullet {}
+    public static class ShipBullet extends Bullet implements ShipDestroyer, AsteroidDestroyer{}
     
     /** The outline of the bullet **/
     private Shape outline;

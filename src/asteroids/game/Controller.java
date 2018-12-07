@@ -4,6 +4,7 @@ import static asteroids.game.Constants.*;
 import java.awt.event.*;
 import java.util.Iterator;
 import javax.swing.*;
+import asteroids.participants.AlienShip;
 import asteroids.participants.Asteroid;
 import asteroids.participants.LifeCounter;
 import asteroids.participants.Ship;
@@ -14,7 +15,7 @@ import asteroids.participants.Ship;
 public class Controller implements KeyListener, ActionListener
 {
     private final LifeCounter lifeCounter = new LifeCounter();
-    
+
     /** The state of all the Participants */
     private ParticipantState pstate;
 
@@ -37,6 +38,7 @@ public class Controller implements KeyListener, ActionListener
     private boolean rightPressed;
     private boolean leftPressed;
     private boolean upPressed;
+    private boolean firePressed;
     /**
      * The time at which a transition to a new stage of the game should be made. A transition is scheduled a few seconds
      * in the future to give the user time to see what has happened before doing something like going to a new level or
@@ -79,6 +81,7 @@ public class Controller implements KeyListener, ActionListener
     public Ship getShip ()
     {
         return ship;
+
     }
 
     /**
@@ -120,10 +123,12 @@ public class Controller implements KeyListener, ActionListener
      */
     private void placeAsteroids ()
     {
-        addParticipant(new Asteroid(0, 2, EDGE_OFFSET, EDGE_OFFSET, 3, this));
+       /* addParticipant(new Asteroid(0, 2, EDGE_OFFSET, EDGE_OFFSET, 3, this));
         addParticipant(new Asteroid(1, 2, SIZE - EDGE_OFFSET, EDGE_OFFSET, 3, this));
         addParticipant(new Asteroid(2, 2, EDGE_OFFSET, SIZE - EDGE_OFFSET, 3, this));
-        addParticipant(new Asteroid(3, 2, SIZE - EDGE_OFFSET, SIZE - EDGE_OFFSET, 3, this));
+        addParticipant(new Asteroid(3, 2, SIZE - EDGE_OFFSET, SIZE - EDGE_OFFSET, 3, this));*/
+        addParticipant(new AlienShip(1, this));
+        addParticipant(new AlienShip(2, this));
 
     }
 
@@ -150,7 +155,7 @@ public class Controller implements KeyListener, ActionListener
 
         // Place the ship
         placeShip();
-        
+
         // place counter
         addParticipant(lifeCounter);
 
@@ -209,7 +214,6 @@ public class Controller implements KeyListener, ActionListener
      */
     public void asteroidDestroyed ()
     {
-        // placeDebris();
         // If all the asteroids are gone, schedule a transition
         if (pstate.countAsteroids() == 0)
         {
@@ -261,6 +265,10 @@ public class Controller implements KeyListener, ActionListener
                 {
                     ship.accelerate();
                 }
+                if (firePressed)
+                {
+                    ship.fire();
+                }
             }
 
             // Refresh screen
@@ -303,7 +311,8 @@ public class Controller implements KeyListener, ActionListener
     @Override
     public void keyPressed (KeyEvent e)
     {
-        switch (e.getKeyCode()) {
+        switch (e.getKeyCode())
+        {
             case KeyEvent.VK_RIGHT:
             case KeyEvent.VK_D:
                 rightPressed = true;
@@ -319,7 +328,7 @@ public class Controller implements KeyListener, ActionListener
             case KeyEvent.VK_SPACE:
             case KeyEvent.VK_S:
                 if (ship != null)
-                    ship.fire();
+                    firePressed = true;
                 break;
         }
     }
@@ -330,7 +339,7 @@ public class Controller implements KeyListener, ActionListener
     @Override
     public void keyTyped (KeyEvent e)
     {
-        
+
     }
 
     /**
@@ -339,7 +348,8 @@ public class Controller implements KeyListener, ActionListener
     @Override
     public void keyReleased (KeyEvent e)
     {
-        switch (e.getKeyCode()) {
+        switch (e.getKeyCode())
+        {
             case KeyEvent.VK_RIGHT:
             case KeyEvent.VK_D:
                 rightPressed = false;
@@ -351,6 +361,11 @@ public class Controller implements KeyListener, ActionListener
             case KeyEvent.VK_UP:
             case KeyEvent.VK_W:
                 upPressed = false;
+                break;
+            case KeyEvent.VK_SPACE:
+            case KeyEvent.VK_S:
+                if (ship != null)
+                    firePressed = false;
                 break;
         }
     }

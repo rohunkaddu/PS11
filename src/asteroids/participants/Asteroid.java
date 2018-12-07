@@ -26,6 +26,7 @@ public class Asteroid extends Participant implements ShipDestroyer
     private int score;
 
     private int speed;
+    
 
     /**
      * Throws an IllegalArgumentException if size or variety is out of range.
