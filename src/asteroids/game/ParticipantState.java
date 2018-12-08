@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Set;
+import asteroids.participants.AlienShip;
 import asteroids.participants.Asteroid;
 
 /**
@@ -79,6 +80,25 @@ public class ParticipantState
         return count;
     }
 
+    public int countAlienShips ()
+    {
+        int count = 0;
+        for (Participant p : participants)
+        {
+            if (p instanceof AlienShip && !p.isExpired())
+            {
+                count++;
+            }
+        }
+        for (Participant p : pendingAdds)
+        {
+            if (p instanceof AlienShip && !p.isExpired())
+            {
+                count++;
+            }
+        }
+        return count;
+    }
     /**
      * Moves each of the active participants to simulate the passage of time.
      */

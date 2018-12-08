@@ -13,14 +13,14 @@ import asteroids.game.ParticipantCountdownTimer;
  * @author carson storm
  *
  */
-public abstract class Bullet extends Participant implements AsteroidDestroyer
+public class Bullet extends Participant implements AsteroidDestroyer
 {
     /**
      * A bullet from a alien ship
      * @author carson storm
      *
      */
-    public static class AlienBullet extends Bullet implements AsteroidDestroyer {}
+    //public class AlienBullet extends Bullet {}
     
     
     /**
@@ -28,7 +28,7 @@ public abstract class Bullet extends Participant implements AsteroidDestroyer
      * @author carson storm
      *
      */
-    public static class ShipBullet extends Bullet implements ShipDestroyer, AsteroidDestroyer{}
+    //public class ShipBullet extends Bullet {}
     
     /** The outline of the bullet **/
     private Shape outline;

@@ -1,5 +1,6 @@
 package asteroids.game;
 
+import java.awt.Font;
 import java.util.Random;
 
 /**
@@ -144,6 +145,16 @@ public class Constants
      * Offset of score/level from top side.
      */
     public final static int LABEL_VERTICAL_OFFSET = 30;
+    
+    /**
+     * Font used for score/level
+     */
+    public final static Font LABEL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 30);
+    
+    /**
+     * Font used for legend
+     */
+    public final static Font LEGEND_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 120);
     
     /**
      * Height of ship

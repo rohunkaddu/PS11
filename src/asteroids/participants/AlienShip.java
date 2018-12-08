@@ -2,17 +2,20 @@ package asteroids.participants;
 
 import java.awt.Shape;
 import java.awt.geom.Path2D;
-import java.util.Random;
+import javax.sound.sampled.Clip;
 import asteroids.destroyers.AsteroidDestroyer;
 import asteroids.destroyers.ShipDestroyer;
 import asteroids.game.Controller;
 import asteroids.game.Participant;
 import asteroids.game.ParticipantCountdownTimer;
+import asteroids.game.ShipBullet;
+import sounds.AsteroidSounds;
 import static asteroids.game.Constants.*;
-
 
 public class AlienShip extends Participant implements AsteroidDestroyer, ShipDestroyer
 {
+    private final static int ALIEN_SOUND_INTERVAL = 200;
+
     private int size;
 
     private Controller controller;
@@ -34,8 +37,12 @@ public class AlienShip extends Participant implements AsteroidDestroyer, ShipDes
 
         new ParticipantCountdownTimer(this, "switchdirection", 5000);
 
-        new ParticipantCountdownTimer(this, "fire", delay + 2000);
+        new ParticipantCountdownTimer(this, "fire", delay);
+    }
 
+    public void startSound ()
+    {
+        new ParticipantCountdownTimer(this, "sound", ALIEN_SOUND_INTERVAL);
     }
 
     @Override
@@ -48,7 +55,7 @@ public class AlienShip extends Participant implements AsteroidDestroyer, ShipDes
     {
         if (size == 2)
         {
-            return SIZE + SHIP_HEIGHT - 25;
+            return SIZE + SHIP_HEIGHT - 20;
         }
         else
         {
@@ -61,16 +68,16 @@ public class AlienShip extends Participant implements AsteroidDestroyer, ShipDes
         if (size == 2)
         {
             Path2D.Double poly = new Path2D.Double();
-            poly.moveTo(17, 0);
-            poly.lineTo(-17, 0);
+            poly.moveTo(23, 0);
+            poly.lineTo(-23, 0);
             poly.moveTo(12, -10);
             poly.lineTo(-12, -10);
-            poly.moveTo(17, 0);
+            poly.moveTo(23, 0);
             poly.lineTo(12, -10);
             poly.lineTo(10, -18);
             poly.lineTo(-10, -18);
             poly.lineTo(-12, -10);
-            poly.lineTo(-17, 0);
+            poly.lineTo(-23, 0);
             poly.lineTo(-12, 10);
             poly.lineTo(12, 10);
             poly.closePath();
@@ -80,16 +87,16 @@ public class AlienShip extends Participant implements AsteroidDestroyer, ShipDes
         else
         {
             Path2D.Double poly = new Path2D.Double();
-            poly.moveTo(9, 0);
-            poly.lineTo(-9, 0);
+            poly.moveTo(12, 0);
+            poly.lineTo(-12, 0);
             poly.moveTo(6, -5);
             poly.lineTo(-6, -5);
-            poly.moveTo(9, 0);
+            poly.moveTo(12, 0);
             poly.lineTo(6, -5);
             poly.lineTo(5, -9);
             poly.lineTo(-5, -9);
             poly.lineTo(-6, -5);
-            poly.lineTo(-8, 0);
+            poly.lineTo(-12, 0);
             poly.lineTo(-6, 5);
             poly.lineTo(6, 5);
             poly.closePath();
@@ -121,6 +128,31 @@ public class AlienShip extends Participant implements AsteroidDestroyer, ShipDes
     public void collidedWith (Participant p)
     {
 
+        if (p instanceof ShipDestroyer || p instanceof ShipBullet)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                Debris debris = new Debris(20);
+                debris.setPosition(getX(), getY());
+                controller.addParticipant(debris);
+            }
+
+            if (controller.getLevel() == 2)
+            {
+                controller.increaseScore(200);
+            }
+            else
+            {
+                controller.increaseScore(1000);
+            }
+
+            AsteroidSounds.playSound(AsteroidSounds.BANG_ALIEN_SHIP);
+
+            Participant.expire(this);
+            Participant.expire(p);
+
+            new ParticipantCountdownTimer(new AlienShip(size, controller), "respawn", ALIEN_DELAY);
+        }
     }
 
     double[] leftDirections = { Math.PI, Math.PI + 1, Math.PI - 1 };
@@ -159,6 +191,23 @@ public class AlienShip extends Participant implements AsteroidDestroyer, ShipDes
             this.fire();
             new ParticipantCountdownTimer(this, "fire", 1000);
         }
+        if (payload.equals("respawn"))
+        {
+            controller.addParticipant(this);
+
+            startSound();
+        }
+        if (payload.equals("sound"))
+        {
+            if (size == 1)
+            {
+                AsteroidSounds.playContinuousSound(AsteroidSounds.SAUCER_SMALL);
+            }
+            else
+            {
+                AsteroidSounds.playContinuousSound(AsteroidSounds.SAUCER_BIG);
+            }
+        }
     }
 
     double max = (5 * (Math.PI / 180));
@@ -166,7 +215,9 @@ public class AlienShip extends Participant implements AsteroidDestroyer, ShipDes
 
     public void fire ()
     {
-        Bullet bullet = new Bullet.AlienBullet();
+        AsteroidSounds.playSound(AsteroidSounds.FIRE);
+
+        AlienBullet bullet = new AlienBullet();
         bullet.setPosition(getX(), getY());
         if (getSize() == 2)
         {

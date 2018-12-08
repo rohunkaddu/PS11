@@ -3,17 +3,29 @@ package asteroids.participants;
 import static asteroids.game.Constants.*;
 import java.awt.Shape;
 import java.awt.geom.*;
-import java.util.Random;
 import asteroids.destroyers.AsteroidDestroyer;
 import asteroids.destroyers.ShipDestroyer;
 import asteroids.game.Controller;
 import asteroids.game.Participant;
+import sounds.AsteroidSounds;
 
 /**
  * Represents asteroids
  */
 public class Asteroid extends Participant implements ShipDestroyer
 {
+    /**
+     * Gets a random speed for a asteroid of the given size
+     * 
+     * @param size the size of the asteroid
+     * @return the speed
+     */
+    private static int getRandomSpeed (int size)
+    {
+        return RANDOM.nextInt((size - 1 == 1 ? MAXIMUM_MEDIUM_ASTEROID_SPEED : MAXIMUM_SMALL_ASTEROID_SPEED)
+                - MAXIMUM_LARGE_ASTEROID_SPEED) + MAXIMUM_LARGE_ASTEROID_SPEED;
+    }
+
     /** The size of the asteroid (0 = small, 1 = medium, 2 = large) */
     private int size;
 
@@ -22,11 +34,6 @@ public class Asteroid extends Participant implements ShipDestroyer
 
     /** The game controller */
     private Controller controller;
-
-    private int score;
-
-    private int speed;
-    
 
     /**
      * Throws an IllegalArgumentException if size or variety is out of range.
@@ -50,7 +57,6 @@ public class Asteroid extends Participant implements ShipDestroyer
         // Create the asteroid
         this.controller = controller;
         this.size = size;
-        this.speed = speed;
         setPosition(x, y);
         setVelocity(speed, RANDOM.nextDouble() * 2 * Math.PI);
         setRotation(2 * Math.PI * RANDOM.nextDouble());
@@ -143,30 +149,6 @@ public class Asteroid extends Participant implements ShipDestroyer
         return size;
     }
 
-    public int getAsteroidSpeed ()
-    {
-        if (size == 1)
-        {
-            Random rand2 = new Random();
-            speed = rand2.nextInt(MAXIMUM_SMALL_ASTEROID_SPEED) + 1;
-            score += 50;
-            return speed;
-        }
-        else if (size == 2)
-        {
-            Random rand3 = new Random();
-            speed = rand3.nextInt(MAXIMUM_MEDIUM_ASTEROID_SPEED) + 1;
-            score += 20;
-            return speed;
-        }
-        else if (size == 0)
-        {
-            score += 100;
-        }
-
-        return 0;
-    }
-
     /**
      * When an Asteroid collides with an AsteroidDestroyer, it expires.
      */
@@ -175,6 +157,19 @@ public class Asteroid extends Participant implements ShipDestroyer
     {
         if (p instanceof AsteroidDestroyer)
         {
+            if (size == 2) {
+                controller.increaseScore(20);
+                AsteroidSounds.playSound(AsteroidSounds.BANG_LARGE);
+            }
+            else if (size == 1) {
+                controller.increaseScore(50);
+                AsteroidSounds.playSound(AsteroidSounds.BANG_MEDIUM);
+            }
+            else if (size == 0) {
+                controller.increaseScore(100);
+                AsteroidSounds.playSound(AsteroidSounds.BANG_SMALL);
+            }
+
             // Expire the asteroid
             Participant.expire(this);
 
@@ -189,8 +184,10 @@ public class Asteroid extends Participant implements ShipDestroyer
 
             if (size > 0)
             {
-                controller.addParticipant(new Asteroid(0, size - 1, getX(), getY(), getAsteroidSpeed(), controller));
-                controller.addParticipant(new Asteroid(0, size - 1, getX(), getY(), getAsteroidSpeed(), controller));
+                controller.addParticipant(new Asteroid(RANDOM.nextInt(3), size - 1, getX(), getY(),
+                        getRandomSpeed(size - 1), controller));
+                controller.addParticipant(new Asteroid(RANDOM.nextInt(3), size - 1, getX(), getY(),
+                        getRandomSpeed(size - 1), controller));
             }
             else
             {

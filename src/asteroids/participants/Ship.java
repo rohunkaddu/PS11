@@ -3,10 +3,12 @@ package asteroids.participants;
 import static asteroids.game.Constants.*;
 import java.awt.Shape;
 import java.awt.geom.*;
+import javax.sound.sampled.Clip;
 import asteroids.destroyers.*;
 import asteroids.game.Controller;
 import asteroids.game.Participant;
-import asteroids.game.ParticipantCountdownTimer;
+import asteroids.game.ShipBullet;
+import sounds.AsteroidSounds;
 
 /**
  * Represents ships
@@ -49,7 +51,9 @@ public class Ship extends Participant implements AsteroidDestroyer, ShipDestroye
     private int bulletsFired;
     
     /** The bullets that the ship has fired **/
-    private Bullet[] bullets = new Bullet[8];;
+    private Bullet[] bullets = new Bullet[8];
+    
+    private boolean isFlaming;
 
     /**
      * Constructs a ship at the specified coordinates that is pointed in the given direction.
@@ -122,10 +126,27 @@ public class Ship extends Participant implements AsteroidDestroyer, ShipDestroye
     public void accelerate ()
     {
         accelerate(SHIP_ACCELERATION);
+    }
+    
+    /**
+     * Toggles the flame between on and off
+     */
+    public void toggleFlame() {
+        isFlaming = ! isFlaming;
         
-        outline = makeShipOutline(1);
+        AsteroidSounds.playContinuousSound(AsteroidSounds.THRUST);
         
-        new ParticipantCountdownTimer(this, "noacceleration", 250);
+        outline = makeShipOutline(isFlaming ? 1 : 0);
+    }
+    
+    /**
+     * Sets whether or not the flame is on
+     * @param isOn  whether or not to make the flame on
+     */
+    public void setFlame(boolean isOn) {
+        isFlaming = isOn;
+        
+        outline = makeShipOutline(isFlaming ? 1 : 0);
     }
 
     /**
@@ -133,14 +154,23 @@ public class Ship extends Participant implements AsteroidDestroyer, ShipDestroye
      */
     @Override
     public void collidedWith (Participant p)
-    {
-        if (p instanceof ShipDestroyer)
+    {   
+        if (p instanceof ShipDestroyer || p instanceof AlienBullet)
         {
             // Expire the ship from the game
             Participant.expire(this);
+            
+            for (int i = 0; i < 5; i++)
+            {
+                Debris debris = new Debris(20);
+                debris.setPosition(getX(), getY());
+                controller.addParticipant(debris);
+            }
 
             // Tell the controller the ship was destroyed
             controller.shipDestroyed();
+            
+            AsteroidSounds.playSound(AsteroidSounds.BANG_SHIP);
         }
     }
 
@@ -149,21 +179,19 @@ public class Ship extends Participant implements AsteroidDestroyer, ShipDestroye
      */
     @Override
     public void countdownComplete (Object payload)
-    {   
-        if (payload.equals("noacceleration")) {
-            outline = makeShipOutline(0);
-        }
+    {  
     }
 
     /**
-     * Fires a bullet from the ship
+     *  s a bullet from the ship
      */
     public void fire() {
         if (bullets[bulletsFired] != null && ! bullets[bulletsFired].isExpired())
             return;
             
+        AsteroidSounds.playSound(AsteroidSounds.FIRE);
         
-        Bullet bullet = new Bullet.ShipBullet();
+        ShipBullet bullet = new ShipBullet();
         bullet.setPosition(getXNose(), getYNose());
         bullet.setVelocity(BULLET_SPEED, getRotation());
         controller.addParticipant(bullet);

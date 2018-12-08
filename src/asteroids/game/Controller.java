@@ -4,17 +4,21 @@ import static asteroids.game.Constants.*;
 import java.awt.event.*;
 import java.util.Iterator;
 import javax.swing.*;
-import asteroids.participants.AlienShip;
+ import asteroids.participants.AlienShip;
 import asteroids.participants.Asteroid;
 import asteroids.participants.LifeCounter;
+import asteroids.participants.Counter;
 import asteroids.participants.Ship;
+import sounds.AsteroidSounds;
 
 /**
  * Controls a game of Asteroids.
  */
 public class Controller implements KeyListener, ActionListener
 {
-    private final LifeCounter lifeCounter = new LifeCounter();
+    private LifeCounter lifeCounter;
+    private Counter scoreCounter;
+    private Counter levelCounter;
 
     /** The state of all the Participants */
     private ParticipantState pstate;
@@ -24,6 +28,12 @@ public class Controller implements KeyListener, ActionListener
 
     /** When this timer goes off, it is time to refresh the animation */
     private Timer refreshTimer;
+    
+    /** The timer of the beats */
+    private Timer beatTimer;
+    
+    /** Whether or not to play beat 1 next */
+    private boolean onBeat1 = true;
 
     /**
      * The current level of the game
@@ -57,11 +67,15 @@ public class Controller implements KeyListener, ActionListener
      */
     public Controller ()
     {
+        AsteroidSounds.playSound(AsteroidSounds.BANG_ALIEN_SHIP);
         // Initialize the ParticipantState
         pstate = new ParticipantState();
 
         // Set up the refresh timer.
         refreshTimer = new Timer(FRAME_INTERVAL, this);
+        
+        // Set up the beat timer
+        beatTimer = new Timer(INITIAL_BEAT, this);
 
         // Clear the transitionTime
         transitionTime = Long.MAX_VALUE;
@@ -73,6 +87,7 @@ public class Controller implements KeyListener, ActionListener
         splashScreen();
         display.setVisible(true);
         refreshTimer.start();
+        beatTimer.start();
     }
 
     /**
@@ -82,6 +97,11 @@ public class Controller implements KeyListener, ActionListener
     {
         return ship;
 
+    }
+    
+    public int getLevel ()
+    {
+        return level;
     }
 
     /**
@@ -94,7 +114,8 @@ public class Controller implements KeyListener, ActionListener
         display.setLegend("Asteroids");
 
         // Place four asteroids near the corners of the screen.
-        placeAsteroids();
+        placeAsteroids(4);
+        //addParticipant(new AlienShip(1, this));
     }
 
     /**
@@ -121,15 +142,15 @@ public class Controller implements KeyListener, ActionListener
     /**
      * Places an asteroid near one corner of the screen. Gives it a random velocity and rotation.
      */
-    private void placeAsteroids ()
+    private void placeAsteroids (int n)
     {
-       /* addParticipant(new Asteroid(0, 2, EDGE_OFFSET, EDGE_OFFSET, 3, this));
-        addParticipant(new Asteroid(1, 2, SIZE - EDGE_OFFSET, EDGE_OFFSET, 3, this));
-        addParticipant(new Asteroid(2, 2, EDGE_OFFSET, SIZE - EDGE_OFFSET, 3, this));
-        addParticipant(new Asteroid(3, 2, SIZE - EDGE_OFFSET, SIZE - EDGE_OFFSET, 3, this));*/
-        addParticipant(new AlienShip(1, this));
-        addParticipant(new AlienShip(2, this));
+        for (int i = 0; i < n; i++)
+        {
+            int x = i % 2 == 0 ? EDGE_OFFSET : SIZE - EDGE_OFFSET;
+            int y = (i / 2) % 2 == 0 ? EDGE_OFFSET : SIZE - EDGE_OFFSET;
 
+            addParticipant(new Asteroid(i % 3, 2, x, y, 3, this));
+        }
     }
 
     /**
@@ -150,14 +171,25 @@ public class Controller implements KeyListener, ActionListener
         // Clear the screen
         clear();
 
-        // Plac asteroids
-        placeAsteroids();
+        // Place asteroids
+        placeAsteroids(4);
+        //addParticipant(new AlienShip(1, this));
 
         // Place the ship
         placeShip();
 
         // place counter
+        lives = 3;
+        level = 1;
+        score = 0;
+
+        lifeCounter = new LifeCounter(0, 20);
+        scoreCounter = new Counter(LABEL_HORIZONTAL_OFFSET, LABEL_VERTICAL_OFFSET);
+        levelCounter = new Counter(SIZE - LABEL_HORIZONTAL_OFFSET, LABEL_VERTICAL_OFFSET);
+
         addParticipant(lifeCounter);
+        addParticipant(scoreCounter);
+        addParticipant(levelCounter);
 
         // Reset statistics
         lives = 3;
@@ -197,16 +229,6 @@ public class Controller implements KeyListener, ActionListener
 
         // Since the ship was destroyed, schedule a transition
         scheduleTransition(END_DELAY);
-
-        if (lives > 0)
-        {
-            placeShip();
-        }
-        else
-        {
-            ship = null;
-        }
-
     }
 
     /**
@@ -218,8 +240,41 @@ public class Controller implements KeyListener, ActionListener
         if (pstate.countAsteroids() == 0)
         {
             scheduleTransition(END_DELAY);
+            nextLevel();
         }
 
+    }
+
+    /**
+     * Progresses to the next level
+     */
+    private void nextLevel ()
+    {
+        level++;
+        levelCounter.setCount(level);
+        
+        // move ship to middle
+        ship.setPosition(SIZE / 2, SIZE / 2);
+        ship.setRotation(-Math.PI/2);
+        
+        // remove aliens
+        for (Iterator<Participant> iter = pstate.getParticipants(); iter.hasNext();) {
+            Participant part = iter.next();
+            
+            if (part instanceof AlienShip)
+                Participant.expire(part);
+        }
+            
+
+        placeAsteroids(level + 3);
+        
+        if (level > 1) {
+            AlienShip alien = new AlienShip(level == 2 ? 2 : 1 , this);
+            
+            alien.startSound();
+            
+            addParticipant(alien);
+        }
     }
 
     /**
@@ -241,6 +296,16 @@ public class Controller implements KeyListener, ActionListener
         if (e.getSource() instanceof JButton)
         {
             initialScreen();
+        }
+        
+        // Play beat and switch
+        else if (e.getSource() == beatTimer)
+        {
+            if (onBeat1) AsteroidSounds.playSound(AsteroidSounds.BEAT_1);
+            else AsteroidSounds.playSound(AsteroidSounds.BEAT_2);
+            
+            beatTimer.setDelay(Math.max(beatTimer.getDelay() - BEAT_DELTA, FASTEST_BEAT));
+            onBeat1 = ! onBeat1;
         }
 
         // Time to refresh the screen and deal with keyboard input
@@ -264,6 +329,9 @@ public class Controller implements KeyListener, ActionListener
                 if (upPressed)
                 {
                     ship.accelerate();
+                    ship.toggleFlame();
+                } else {
+                    ship.setFlame(false);
                 }
                 if (firePressed)
                 {
@@ -301,8 +369,21 @@ public class Controller implements KeyListener, ActionListener
             if (lives <= 0)
             {
                 finalScreen();
+            } else {
+                placeShip();
             }
         }
+    }
+
+    /**
+     * Increases the score by the given amount
+     * 
+     * @param amount the amount by which to increase the score
+     */
+    public void increaseScore (int amount)
+    {
+        score += amount;
+        scoreCounter.setCount(score);
     }
 
     /**
@@ -360,6 +441,10 @@ public class Controller implements KeyListener, ActionListener
                 break;
             case KeyEvent.VK_UP:
             case KeyEvent.VK_W:
+                if (AsteroidSounds.THRUST.isRunning())
+                {
+                    AsteroidSounds.THRUST.stop();
+                }
                 upPressed = false;
                 break;
             case KeyEvent.VK_SPACE:
