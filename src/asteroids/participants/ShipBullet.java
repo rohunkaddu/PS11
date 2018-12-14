@@ -1,10 +1,11 @@
-package asteroids.game;
+package asteroids.participants;
 
 import static asteroids.game.Constants.*;
 import java.awt.Shape;
 import java.awt.geom.Path2D;
 import asteroids.destroyers.*;
-import asteroids.participants.Bullet;
+import asteroids.game.Participant;
+import asteroids.game.ParticipantCountdownTimer;
 
 public class ShipBullet extends Bullet
 {
@@ -26,8 +27,6 @@ public class ShipBullet extends Bullet
     @Override
     public void collidedWith (Participant p)
     {
-        if (p instanceof ShipDestroyer)
-        {
-        }
+        Participant.expire(this);
     }
 }

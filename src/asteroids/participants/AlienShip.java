@@ -8,7 +8,6 @@ import asteroids.destroyers.ShipDestroyer;
 import asteroids.game.Controller;
 import asteroids.game.Participant;
 import asteroids.game.ParticipantCountdownTimer;
-import asteroids.game.ShipBullet;
 import sounds.AsteroidSounds;
 import static asteroids.game.Constants.*;
 
@@ -33,13 +32,18 @@ public class AlienShip extends Participant implements AsteroidDestroyer, ShipDes
         setPosition(this.xPosition(), RANDOM.nextInt(SIZE));
         createShipOutline(size);
 
-        new ParticipantCountdownTimer(this, "start", delay);
+        // timer for ship spawn
+        new ParticipantCountdownTimer(this, "respawn", delay);
 
-        new ParticipantCountdownTimer(this, "switchdirection", 5000);
+        //switch direction
+        new ParticipantCountdownTimer(this, "switchdirection", 3000);
 
-        new ParticipantCountdownTimer(this, "fire", delay);
+        //firing
+        new ParticipantCountdownTimer(this, "fire", delay + 1000);
+
     }
 
+    //start alien sound
     public void startSound ()
     {
         new ParticipantCountdownTimer(this, "sound", ALIEN_SOUND_INTERVAL);
@@ -55,7 +59,7 @@ public class AlienShip extends Participant implements AsteroidDestroyer, ShipDes
     {
         if (size == 2)
         {
-            return SIZE + SHIP_HEIGHT - 20;
+            return SIZE + SHIP_HEIGHT - 27;
         }
         else
         {
@@ -108,16 +112,17 @@ public class AlienShip extends Participant implements AsteroidDestroyer, ShipDes
 
     public int getVelocity ()
     {
-        if (size == 1)
+        if (getSize() == 1)
         {
             this.speed = 4;
         }
-        else
+        else if (getSize() == 2)
         {
             this.speed = 3;
         }
         return this.speed;
     }
+
 
     public int getSize ()
     {
@@ -148,8 +153,12 @@ public class AlienShip extends Participant implements AsteroidDestroyer, ShipDes
 
             AsteroidSounds.playSound(AsteroidSounds.BANG_ALIEN_SHIP);
 
+            Clip sound = size == 1 ? AsteroidSounds.SAUCER_SMALL : AsteroidSounds.SAUCER_BIG;
+
+            if (sound.isRunning())
+                sound.stop();
+
             Participant.expire(this);
-            Participant.expire(p);
 
             new ParticipantCountdownTimer(new AlienShip(size, controller), "respawn", ALIEN_DELAY);
         }
@@ -157,45 +166,87 @@ public class AlienShip extends Participant implements AsteroidDestroyer, ShipDes
 
     double[] leftDirections = { Math.PI, Math.PI + 1, Math.PI - 1 };
     double[] rightDirections = { 0, 1, -1 };
-
+    
     double direction = RANDOM.nextInt(2);
+
 
     @Override
     public void countdownComplete (Object payload)
     {
+        //logic switching
         if (payload.equals("switchdirection"))
         {
             if (direction == 0)
             {
-                this.setVelocity(getVelocity(), RANDOM.nextInt(3) - 1);
+                if (size == 2)
+                {
+                    this.setVelocity(3, RANDOM.nextInt(3) - 1);
+                    System.out.println(getVelocity());
+                }
+                else
+                {
+                    this.setVelocity(4, RANDOM.nextInt(3) - 1);
+                }
             }
             else
             {
-                this.setVelocity(getVelocity(), leftDirections[RANDOM.nextInt(3)]);
+                if (size == 2)
+                {
+                    this.setVelocity(3, leftDirections[RANDOM.nextInt(3)]);
+                }
+                else
+                {
+                    this.setVelocity(4, leftDirections[RANDOM.nextInt(3)]);
+                }
             }
             new ParticipantCountdownTimer(this, "switchdirection", 3000);
         }
+        //logic for starting
         if (payload.equals("start"))
         {
             if (direction == 0)
             {
-                setVelocity(getVelocity(), 0);
+                if (size == 2)
+                {
+                    setVelocity(3, 0);
+                    startSound();
+                }
+                else
+                {
+                    setVelocity(4, 0);
+                    startSound();
+                }
             }
             else
             {
-                setVelocity(getVelocity(), Math.PI);
+                if (size == 2)
+                {
+                    setVelocity(3, Math.PI);
+                    startSound();
+                }
+                else
+                {
+                    setVelocity(4, Math.PI);
+                    startSound();
+                }
             }
         }
+        //firing logic
         if (payload.equals("fire"))
         {
-            this.fire();
-            new ParticipantCountdownTimer(this, "fire", 1000);
+            if (controller.getShip() != null && controller.getLevel() != 1)
+            {
+                this.fire();
+            }
+            new ParticipantCountdownTimer(this, "fire", 2500);
         }
         if (payload.equals("respawn"))
         {
-            controller.addParticipant(this);
-
-            startSound();
+            if (controller.getLives() > 0)
+            {
+                controller.addParticipant(this);
+                startSound();
+            }
         }
         if (payload.equals("sound"))
         {
@@ -213,6 +264,7 @@ public class AlienShip extends Participant implements AsteroidDestroyer, ShipDes
     double max = (5 * (Math.PI / 180));
     double min = (-5 * (Math.PI / 180));
 
+    //firing logic
     public void fire ()
     {
         AsteroidSounds.playSound(AsteroidSounds.FIRE);

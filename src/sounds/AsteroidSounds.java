@@ -52,6 +52,10 @@ public final class AsteroidSounds
     public static final Clip SAUCER_BIG = getClip("/sounds/saucerBig.wav");
     public static final Clip SAUCER_SMALL = getClip("/sounds/saucerSmall.wav");
     public static final Clip THRUST = getClip("/sounds/thrust.wav");
+    public static final Clip[] SAUCER_BEATS = {SAUCER_SMALL, SAUCER_BIG};
+    public static final Clip[] potentialRunning = {SAUCER_SMALL, SAUCER_BIG, BEAT_1, BEAT_2};
+
+    
     
     public static void playSound(Clip clip) {
         clip.setFramePosition(0);

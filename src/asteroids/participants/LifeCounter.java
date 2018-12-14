@@ -38,11 +38,12 @@ public class LifeCounter extends Participant
      * @param y
      */
     public LifeCounter(int x, int y) {
-        indicators = new Shape[3];
+        indicators = new Shape[lives];
         
-        indicators[0] = makeIndicator(x + SHIP_WIDTH / 2 + SHIP_SEPARATION, y);
-        indicators[1] = makeIndicator(x + SHIP_WIDTH / 2 + SHIP_SEPARATION * 2 + SHIP_WIDTH, y);
-        indicators[2] = makeIndicator(x + SHIP_WIDTH / 2 + SHIP_SEPARATION * 3 + SHIP_WIDTH * 2, y);
+        for (int i = 0; i < lives; i++) {
+            indicators[i] = makeIndicator(x + SHIP_WIDTH / 2 + SHIP_SEPARATION * (i + 1) + SHIP_WIDTH * i, y);
+            
+        }
     }
 
     @Override

@@ -7,7 +7,6 @@ import javax.sound.sampled.Clip;
 import asteroids.destroyers.*;
 import asteroids.game.Controller;
 import asteroids.game.Participant;
-import asteroids.game.ShipBullet;
 import sounds.AsteroidSounds;
 
 /**
@@ -198,6 +197,6 @@ public class Ship extends Participant implements AsteroidDestroyer, ShipDestroye
         
         bullets[bulletsFired] = bullet;
         
-        bulletsFired = (bulletsFired + 1) % 7;
+        bulletsFired = (bulletsFired + 1) % 8;
     }
 }

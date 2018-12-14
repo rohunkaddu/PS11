@@ -170,4 +170,5 @@ public class Constants
      * Distance between ships when used to display lives
      */
     public final static int SHIP_SEPARATION = 6;
+    
 }
