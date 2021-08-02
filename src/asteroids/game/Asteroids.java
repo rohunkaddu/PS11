@@ -2,7 +2,7 @@ package asteroids.game;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-
+// TEST COMMENT
 /**
  * The main class for the application.
  */
